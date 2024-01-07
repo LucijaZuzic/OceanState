@@ -32,6 +32,9 @@ num_infls_lat = dict()
 num_infls_all = dict()
 num_infls_mrkr = dict()
 
+anomaly_classes = set()
+non_anomaly_classes = set()
+
 order_of_mrkrs = []
  
 for subdir_name in all_subdirs:
@@ -172,14 +175,28 @@ for subdir_name in all_subdirs:
                 num_infls_mrkr[mrkr] += 1
 
                 order_of_mrkrs[-1].append(mrkr)
+                
+                is_anom = mrkr[0] != "e"
 
-                #if not os.path.isdir("mrkr_draw/" + mrkr):
-                    #os.makedirs("mrkr_draw/" + mrkr)
-                #plt.plot(long_new, lat_new, color = "k")
-                #plt.axis("off")
-                #plt.savefig("mrkr_draw/" + mrkr + "/" + str(ws) + "_" + subdir_name + "_" + some_file + "_" + str(x) + "_" + mrkr + ".png", bbox_inches = "tight")
-                #plt.close()
- 
+                if not is_anom:
+                    for ch in mrkr:
+                        if ch != "d" and ch != "e":
+                            is_anom = True
+                            break
+
+                if is_anom:
+                    anomaly_classes.add(mrkr)
+                else:
+                    non_anomaly_classes.add(mrkr)
+
+                if is_anom:
+                    if not os.path.isdir("mrkr_draw/" + mrkr):
+                        os.makedirs("mrkr_draw/" + mrkr)
+                    plt.plot(long_new, lat_new, color = "k")
+                    plt.axis("off")
+                    plt.savefig("mrkr_draw/" + mrkr + "/" + str(ws) + "_" + subdir_name + "_" + some_file + "_" + str(x) + "_" + mrkr + ".png", bbox_inches = "tight")
+                    plt.close()
+
 print(classes)
 print(num_infls_lat)
 print(num_infls_long)
@@ -295,8 +312,7 @@ for i in range(len(order_of_mrkrs)):
                 occur_of_prev_prev_mrkr[mrkr][prev_mrkr][prev_prev_mrkr] = 0
 
             occur_of_prev_prev_mrkr[mrkr][prev_mrkr][prev_prev_mrkr] += 1
-
-
+            
 percent_of_prev_mrkr = dict()
 for mrkr in occur_of_prev_mrkr:
     percent_of_prev_mrkr[mrkr] = dict()
@@ -328,3 +344,40 @@ for cl in num_infls_mrkr:
                     if percent_of_prev_prev_mrkr[cl][x][y] >= 10:
                         print(cl, x, y, percent_of_prev_prev_mrkr[cl][x][y])
 '''
+
+print(len(anomaly_classes), len(non_anomaly_classes))
+natotal = 0
+atotal = 0
+max_size_of_anomaly_class = 0
+min_size_of_non_anomaly_class = 1000000
+max_size_of_non_anomaly_class = 0
+min_size_of_anomaly_class = 1000000
+max_anomaly_class = ""
+min_anomaly_class = ""
+max_non_anomaly_class = ""
+min_non_anomaly_class = ""
+for cl in num_infls_mrkr:
+    if cl in anomaly_classes:
+        atotal += num_infls_mrkr[cl]
+        if num_infls_mrkr[cl] > max_size_of_anomaly_class:
+            max_size_of_anomaly_class = num_infls_mrkr[cl]
+            max_anomaly_class = cl
+        if num_infls_mrkr[cl] < min_size_of_anomaly_class:
+            min_size_of_anomaly_class = num_infls_mrkr[cl]
+            min_anomaly_class = cl
+    if cl in non_anomaly_classes:
+        natotal += num_infls_mrkr[cl]
+        if num_infls_mrkr[cl] > max_size_of_non_anomaly_class:
+            max_size_of_non_anomaly_class = num_infls_mrkr[cl]
+            max_non_anomaly_class = cl
+        if num_infls_mrkr[cl] < min_size_of_non_anomaly_class:
+            min_size_of_non_anomaly_class = num_infls_mrkr[cl]
+            min_non_anomaly_class = cl
+
+print(atotal, natotal)
+
+print(min_anomaly_class, min_size_of_anomaly_class)
+print(max_anomaly_class, max_size_of_anomaly_class)
+
+print(min_non_anomaly_class, min_size_of_non_anomaly_class)
+print(max_non_anomaly_class, max_size_of_non_anomaly_class)

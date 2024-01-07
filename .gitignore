@@ -1,3 +1,5 @@
 flights/*
 trajs/*
 data2/*
+__pycache__/*
+mrkr_draw/*
